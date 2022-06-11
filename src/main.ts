@@ -1,5 +1,13 @@
-import { createApp, App as AppVue } from 'vue'
+import { createApp as createVueApp, App as AppVue } from 'vue'
+import { pipe } from './lib/functions'
+import App from '@/App.vue'
 import './registerServiceWorker'
+
+/**
+ * Layouts
+ * @see loadLayouts
+ */
+import DefaultLayout from '@/layouts/default.vue'
 
 /**
  * Plugins
@@ -9,22 +17,25 @@ import gun from '@/plugins/gun'
 import mitt from '@/plugins/mitt'
 import router from './router'
 
-/**
- * App
- * @see main
- */
-import App from '@/App.vue'
+function loadLayouts (app: AppVue) {
+  app.component('default-layout', DefaultLayout)
+  return app
+}
 
 function loadPlugins (app: AppVue) {
   app.use(gun)
   app.use(mitt)
   app.use(router)
+  return app
 }
 
-function main () {
-  const app = createApp(App)
-  loadPlugins(app)
+function mountApp (app: AppVue) {
   app.mount('#app')
+  return app
 }
 
-main()
+pipe(
+  loadPlugins,
+  loadLayouts,
+  mountApp
+)(createVueApp(App))

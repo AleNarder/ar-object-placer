@@ -1,0 +1,50 @@
+steps:
+  # artifacts generation
+  - id: Build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - "-t"
+      - "$_IMAGE_NAME:$TAG_NAME"
+      - .
+      - "-f"
+      - $_DOCKERFILE_NAME
+    dir: $_DOCKERFILE_DIR
+
+  # push artifacts
+  - id: Push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - "$_IMAGE_NAME:$TAG_NAME"
+
+  # deploy new revision
+  - id: Deploy
+    entrypoint: gcloud
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    args:
+      - run
+      - deploy
+      - $_SERVICE_NAME
+      - "--concurrency=$_CONCURRENCY"
+      - "--cpu=$_CPU"
+      - "--image=$_IMAGE_NAME:$TAG_NAME"
+      - "--ingress=$_INGRESS"
+      - "$_TRAFFIC_ALLOW_POLICY"
+      - "--min-instances=$_MIN_INSTANCES"
+      - "--max-instances=$_MAX_INSTANCES"
+      - "--memory=$_MEMORY"
+      - "--platform=managed"
+      - "--port=80"
+      - "--quiet"
+      - "--region=$_DEPLOY_REGION"
+      - "--timeout=$_TIMEOUT"
+      - >-
+        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID
+
+timeout: 1800s
+options:
+  substitutionOption: ALLOW_LOOSE
+
+tags:
+  - $_SERVICE_NAME

@@ -1,4 +1,4 @@
-# placer
+# AR-OBJECT-PLACER
 
 ## Project setup
 ```
