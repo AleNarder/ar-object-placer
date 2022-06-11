@@ -1,5 +1,5 @@
 # Create the container from the alpine linux image
-FROM alpine:3.12 AS builder
+FROM alpine:3.16 AS builder
 
 RUN apk add --update nodejs yarn git
 
